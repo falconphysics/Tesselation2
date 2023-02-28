@@ -59,7 +59,7 @@ function keyPressed() {
 }
 
 function draw() {
-  background(255);
+  background(200);
 
   if (!runPrint) {
     push();

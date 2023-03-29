@@ -1,9 +1,10 @@
 // save("SVG.svg")
 
-p5.disableFriendlyErrors = true;
+// p5.disableFriendlyErrors = true;
 
 let lines = [];
 let buttons = [];
+let edgeButtons = [];
 let vertices = [];
 let end;
 let pointSelected = null;
@@ -19,7 +20,7 @@ function setup() {
   // frameRate(30)
 
   dim = min(width, height);
-  end = createVector(150, 150);
+  end = createVector((width - dim) / 2 + 150, (height - dim) / 2 + 150);
 
   // lines.push(new Line("line", end.x, end.y));
 
@@ -34,12 +35,27 @@ function setup() {
   buttons.push(new Button(width - 130, 30, 40, color(255, 160, 160), "delete"));
   buttons.push(new Button(width - 180, 30, 40, color(160, 255, 160), "print"));
   buttons.push(new Button(width - 230, 30, 40, color(160, 160, 255), "full"));
-  buttons.push(new Button(width - 230, 30, 40, color(160, 160, 255), "save"));
+
+  edgeButtons.push(new edgeButton(width - 120, 80, width - 40, 80, 5));
+  edgeButtons.push(new edgeButton(width - 40, 160, width - 120, 160, 5));
+  edgeButtons.push(new edgeButton(width - 40, 80, width - 40, 160, 5));
+  edgeButtons.push(new edgeButton(width - 120, 160, width - 120, 80, 5));
+
+  // buttons.push(new Button(width - 280, 30, 40, color(160, 160, 255), "save"));
 
   // vertices.push(createVector(150, 150));
   // vertices.push(createVector(dim - 150, 150));
   // vertices.push(createVector(150, dim - 150));
   // vertices.push(createVector(dim - 150, dim - 150));
+
+  // for (let i = 0; i < 4; i++) {
+  //   let angle = map(i, 0, 4, 0, TWO_PI) - PI * 3 / 4;
+  //   let x = width / 2 + cos(angle) * 150;
+  //   let y = height / 2 + sin(angle) * 150;
+
+  //   vertices.push(createVector(x, y))
+  // }
+
   vertices.push(
     createVector((width - dim) / 2 + 150, (height - dim) / 2 + 150)
   );
@@ -55,11 +71,12 @@ function setup() {
 }
 
 function keyPressed() {
-  fullscreen(true);
+  if (key == "f") fullscreen(true);
 }
 
 function draw() {
-  background(200);
+  background(255);
+  // background(128 + 255 * noise(0, frameCount * 0.01), 128 + 255 * noise(10, frameCount * 0.01), 128 + 255 * noise(0, frameCount * 0.01));
 
   if (!runPrint) {
     push();
@@ -74,6 +91,23 @@ function draw() {
     for (let button of buttons) {
       button.display();
     }
+
+    for (let edgeButton of edgeButtons) {
+      edgeButton.display();
+      edgeButton.hover();
+    }
+
+    // push();
+    // stroke(0, 100);
+    // strokeWeight(3);
+    // rect(width - 100, 80, 80, 80);
+    // stroke(0);
+    // strokeWeight(5)
+    // point(width - 100, 80);
+    // point(width - 100, 160);
+    // point(width - 20, 80);
+    // point(width - 20, 160);
+    // pop();
   } else {
     push();
     for (let i = 0; i < 4; i++) {
@@ -210,6 +244,14 @@ function mousePressed() {
       }
     }
 
+    for (let edgeButton of edgeButtons) {
+      if (edgeButton.hover()) {
+        edgeButton.selected = true;
+      } else {
+        edgeButton.selected = false;
+      }
+    }
+
     for (let i in lines) {
       for (let j in lines[i].points) {
         let p = lines[i].points[j];
@@ -224,18 +266,18 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  if (!runPrint) {
-    for (let i in vertices) {
-      let d = dist(pmouseX, pmouseY, vertices[i].x, vertices[i].y);
-      if (d < 10) {
-        if (i == 0 || i == 2) {
-          currentSide = "NS";
-        } else {
-          currentSide = "EW";
-        }
-      }
-    }
-  }
+  // if (!runPrint) {
+  //   for (let i in vertices) {
+  //     let d = dist(pmouseX, pmouseY, vertices[i].x, vertices[i].y);
+  //     if (d < 10) {
+  //       if (i == 0 || i == 2) {
+  //         currentSide = "NS";
+  //       } else {
+  //         currentSide = "EW";
+  //       }
+  //     }
+  //   }
+  // }
 
   lineSelected = null;
   pointSelected = null;
@@ -288,6 +330,11 @@ function addLine(type) {
       );
     }
   }
+}
+
+function inBox(x, y, minX, minY, maxX, maxY) {
+  if (x > minX && y > minY && x < maxX && y < maxY) return true;
+  return false;
 }
 
 class Line {
@@ -384,6 +431,50 @@ class Button {
       line(0.25, -0.25, 0.25, -0.15);
       line(0.25, 0.25, 0.25, 0.15);
     }
+    pop();
+  }
+}
+
+class edgeButton {
+  constructor(x1, y1, x2, y2, index) {
+    this.p1 = createVector(x1, y1);
+    this.p2 = createVector(x2, y2);
+    this.index = index;
+    this.selected = false;
+    this.hovered = false;
+  }
+
+  hover() {
+    let d = this.p1.dist(this.p2);
+    let angle = atan2(this.p2.x - this.p1.x, this.p2.y - this.p1.y);
+    // let angle = PI / 3;
+    let x = mouseX - this.p1.x;
+    let y = mouseY - this.p1.y;
+    if (inBox(x * cos(angle) - y * sin(angle), x * sin(angle) + y * cos(angle), -5, 5, 5, d - 5)) {
+      this.hovered = true;
+      return true;
+    } else {
+      this.hovered = false;
+      return false;
+    }
+  }
+
+  display() {
+    push();
+    stroke(0, 100);
+    strokeWeight(3);
+    if (this.hovered) {
+      strokeWeight(5);
+    }
+    if (this.selected) {
+      stroke(255, 64, 0, 100);
+      strokeWeight(5);
+    }
+    line(this.p1.x, this.p1.y, this.p2.x, this.p2.y);
+    stroke(0);
+    strokeWeight(5);
+    point(this.p1);
+    point(this.p2);
     pop();
   }
 }

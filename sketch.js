@@ -157,26 +157,28 @@ function drawEverything() {
       y0 = i > 0 ? lines[i - 1].points[lines[i - 1].points.length - 1].y : y0;
 
       if (!runPrint) {
-        for (let j in lines[i].points) {
-          let x = lines[i].points[j].x;
-          let y = lines[i].points[j].y;
-          let d = dist(x, y, mouseX, mouseY);
+        for (let n of [0, dim - 300]) {
+          for (let j in lines[i].points) {
+            let x = lines[i].points[j].x;
+            let y = lines[i].points[j].y;
+            let d = currentSide == 0 ? dist(x, y, mouseX, mouseY - n) : dist(x, y, mouseX - n, mouseY);
 
-          if (d < closest) {
-            closest = d;
-            lineSelected = i;
-            pointSelected = j;
-          }
+            if (d < closest) {
+              closest = d;
+              lineSelected = i;
+              pointSelected = j;
+            }
 
-          if (lines[i].type == "curve") {
-            push();
-            stroke(0, 32);
-            strokeWeight(3);
-            // point(lines[i].points[j]);
+            if (lines[i].type == "curve") {
+              push();
+              stroke(0, 32);
+              strokeWeight(3);
+              // point(lines[i].points[j]);
 
-            line(x0, y0, x1, y1);
-            line(x2, y2, x3, y3);
-            pop();
+              line(x0, y0, x1, y1);
+              line(x2, y2, x3, y3);
+              pop();
+            }
           }
         }
 
@@ -265,11 +267,13 @@ function mousePressed() {
       let lines = t.lines;
       for (let i in lines) {
         for (let j in lines[i].points) {
-          let p = lines[i].points[j];
-          let d = dist(mouseX, mouseY, p.x, p.y);
-          if (d < 20) {
-            lineSelected = i;
-            pointSelected = j;
+          for (let n of [0, dim - 300]) {
+            let p = lines[i].points[j];
+            let d = currentSide == 0 ? dist(mouseX, mouseY - n, p.x, p.y) : dist(mouseX - n, mouseY, p.x, p.y);
+            if (d < 20) {
+              lineSelected = i;
+              pointSelected = j;
+            }
           }
         }
       }
@@ -278,18 +282,23 @@ function mousePressed() {
 }
 
 function mouseReleased() {
-  // if (!runPrint) {
-  //   for (let i in vertices) {
-  //     let d = dist(pmouseX, pmouseY, vertices[i].x, vertices[i].y);
-  //     if (d < 10) {
-  //       if (i == 0 || i == 2) {
-  //         currentSide = "NS";
-  //       } else {
-  //         currentSide = "EW";
-  //       }
-  //     }
-  //   }
-  // }
+  if (!runPrint) {
+    for (let i in vertices) {
+      // for (let n of [0, dim - 300]) {
+      // let d = currentSize == 0 ? dist(pmouseX, pmouseY - n, vertices[i].x, vertices[i].y) : dist(pmouseX - n, pmouseY, vertices[i].x, vertices[i].y);
+      // }
+      // let d = dist(pmouseX, pmouseY, vertices[i].x, vertices[i].y);
+      let d = dist(pmouseX, pmouseY, vertices[i].x, vertices[i].y);
+      if (d < 10) {
+        // if (i == 0 || i == 2) {
+        //   currentSide = "NS";
+        // } else {
+        //   currentSide = "EW";
+        // }
+        currentSide = min(1, currentSide + 1);
+      }
+    }
+  }
 
   lineSelected = null;
   pointSelected = null;
@@ -300,19 +309,34 @@ function mouseDragged() {
   if (!runPrint && !buttonSelected) {
     if (pointSelected != null && lineSelected != null) {
       for (let v of vertices) {
-        if (dist(v.x, v.y, mouseX, mouseY) < 10) {
-          tesselation[currentSide].lines[lineSelected].points[pointSelected].set(v.x, v.y);
+        for (let n of [0, dim - 300]) {
+          // console.log(n)
+          // for (let N = 0; N <= 1; N++) {
+          //   let n = [0, dim - 300][N];
+          let d = dist(v.x, v.y, mouseX, mouseY - n);
+          if (d < 10) {
+            tesselation[currentSide].lines[lineSelected].points[pointSelected].set(v.x, v.y);
+            // tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY - n);
+            return false;
+          }
+        }
+      }
+
+      // if (tesselation[currentSide].lines.length > 0) {
+      let v = tesselation[currentSide].lines[lineSelected].points[pointSelected];
+      // }
+      for (let n of [0, dim - 300]) {
+        let d = currentSide == 0 ? dist(v.x, v.y, mouseX, mouseY - n) : dist(v.x, v.y, mouseX - n, mouseY);
+        if (d < 20) {
+          if (currentSide == 0) {
+            tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY - n);
+          } else if (currentSide == 1) {
+            tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX - n, mouseY);
+          }
 
           return false;
         }
       }
-
-      // let v = lines[lineSelected].points[pointSelected];
-      // let d = dist(v.x, v.y, mouseX, mouseY);
-      // if (d < 20)
-      tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY);
-
-      return false;
     }
   }
 }

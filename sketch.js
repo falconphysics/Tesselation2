@@ -313,7 +313,7 @@ function mouseDragged() {
           // console.log(n)
           // for (let N = 0; N <= 1; N++) {
           //   let n = [0, dim - 300][N];
-          let d = dist(v.x, v.y, mouseX, mouseY - n);
+          let d = dist(v.x, v.y, mouseX, mouseY);
           if (d < 10) {
             tesselation[currentSide].lines[lineSelected].points[pointSelected].set(v.x, v.y);
             // tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY - n);
@@ -327,15 +327,13 @@ function mouseDragged() {
       // }
       for (let n of [0, dim - 300]) {
         let d = currentSide == 0 ? dist(v.x, v.y, mouseX, mouseY - n) : dist(v.x, v.y, mouseX - n, mouseY);
-        if (d < 20) {
-          if (currentSide == 0) {
-            tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY - n);
-          } else if (currentSide == 1) {
-            tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX - n, mouseY);
-          }
-
-          return false;
+        if (currentSide == 0) {
+          tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX, mouseY - n);
+        } else if (currentSide == 1) {
+          tesselation[currentSide].lines[lineSelected].points[pointSelected].set(mouseX - n, mouseY);
         }
+
+        return false;
       }
     }
   }

@@ -12,7 +12,10 @@ let pointSelected = null;
 let lineSelected = null;
 let buttonSelected = false;
 let currentSide = 0;
-let runPrint = false;
+let runPrint = true;
+let midPoint;
+let printScale = 0.5;
+
 
 function setup() {
   // createCanvas(displayWidth, displayHeight);
@@ -42,11 +45,13 @@ function setup() {
     }
   ];
 
-  buttons.push(new Button(width - 30, 30, 40, color(225, 225, 225), "line"));
-  buttons.push(new Button(width - 80, 30, 40, color(225, 225, 225), "curve"));
-  buttons.push(new Button(width - 130, 30, 40, color(255, 160, 160), "delete"));
-  buttons.push(new Button(width - 180, 30, 40, color(160, 255, 160), "print"));
-  buttons.push(new Button(width - 230, 30, 40, color(160, 160, 255), "full"));
+  buttons.push(new Button(width - 30, 30, 40, color(225, 225, 225), "line", false));
+  buttons.push(new Button(width - 80, 30, 40, color(225, 225, 225), "curve", false));
+  buttons.push(new Button(width - 130, 30, 40, color(255, 160, 160), "delete", false));
+  buttons.push(new Button(width - 180, 30, 40, color(160, 255, 160), "print", false));
+  buttons.push(new Button(width - 230, 30, 40, color(160, 160, 255), "full", false));
+  buttons.push(new Button(width - 30, 30, 40, color(255, 160, 255), "scale", true))
+
 
   edgeButtons.push(new edgeButton(width - 120, 80, width - 40, 80, 0));
   edgeButtons.push(new edgeButton(width - 40, 160, width - 120, 160, 0));
@@ -80,6 +85,12 @@ function setup() {
   vertices.push(
     createVector((width + dim) / 2 - 150, (height + dim) / 2 - 150)
   );
+
+  midPoint = createVector(0, 0);
+  for (let v of vertices) {
+    midPoint.add(v);
+  }
+  midPoint.div(4);
 }
 
 function keyPressed() {
@@ -89,6 +100,10 @@ function keyPressed() {
 function draw() {
   background(255);
   // background(128 + 255 * noise(0, frameCount * 0.01), 128 + 255 * noise(10, frameCount * 0.01), 128 + 255 * noise(0, frameCount * 0.01));
+
+  for (let button of buttons) {
+    if (runPrint == button.displayOnPrintScreen) button.display();
+  }
 
   if (!runPrint) {
     push();
@@ -100,29 +115,25 @@ function draw() {
 
     drawEverything();
 
-    for (let button of buttons) {
-      button.display();
-    }
-
     for (let edgeButton of edgeButtons) {
       edgeButton.display();
       edgeButton.hover();
     }
   } else {
-    push();
+    let x = [(width * 0.25), (width * 0.75), (width * 0.75), (width * 0.25)];
+    let y = [(height * 0.25), (height * 0.25), (height * 0.75), (height * 0.75)];
     for (let i = 0; i < 4; i++) {
       push();
-      let x = [0, dim, 0, dim];
-      let y = [0, dim, dim, 0];
-
-      scale(0.5);
-      translate(x[i] + dim / 2, y[i] + dim / 2);
+      translate(x[i], y[i]);
+      scale(printScale);
       rotate((PI / 2) * i);
-      translate(-dim / 2, -dim / 2);
+
+      translate(-midPoint.x, -midPoint.y);
+
       drawEverything();
+
       pop();
     }
-    pop();
   }
 }
 
@@ -387,12 +398,13 @@ class Line {
 }
 
 class Button {
-  constructor(x, y, size, col, label) {
+  constructor(x, y, size, col, label, displayOnPrintScreen) {
     this.pos = createVector(x, y);
     this.size = size;
     this.pressed = false;
     this.col = col;
     this.label = label;
+    this.displayOnPrintScreen = displayOnPrintScreen;
   }
 
   display() {
@@ -464,6 +476,10 @@ class Button {
       line(-0.25, 0.25, -0.25, 0.15);
       line(0.25, -0.25, 0.25, -0.15);
       line(0.25, 0.25, 0.25, 0.15);
+    } else if (this.label == "scale") {
+      // textAlign(CENTER);
+      fill(0);
+      text(0, 0, "1");
     }
     pop();
   }

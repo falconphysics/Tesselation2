@@ -12,10 +12,14 @@ let pointSelected = null;
 let lineSelected = null;
 let buttonSelected = false;
 let currentSide = 0;
-let runPrint = true;
+let runPrint = false;
 let midPoint;
 let printScale = 0.5;
+let myFont;
 
+function preload() {
+  myFont = loadFont("Oswald-VariableFont_wght.ttf")
+}
 
 function setup() {
   // createCanvas(displayWidth, displayHeight);
@@ -50,7 +54,7 @@ function setup() {
   buttons.push(new Button(width - 130, 30, 40, color(255, 160, 160), "delete", false));
   buttons.push(new Button(width - 180, 30, 40, color(160, 255, 160), "print", false));
   buttons.push(new Button(width - 230, 30, 40, color(160, 160, 255), "full", false));
-  buttons.push(new Button(width - 30, 30, 40, color(255, 160, 255), "scale", true))
+  buttons.push(new Button(width - 30, 30, 40, color(255, 160, 255), "scale", true));
 
 
   edgeButtons.push(new edgeButton(width - 120, 80, width - 40, 80, 0));
@@ -260,6 +264,19 @@ function mousePressed() {
         }
       } else {
         if (button.label == "save") {
+          return false;
+        }
+        if (button.label == "scale") {
+          let nextPrintScale = 0;
+          if (printScale == 0.2) nextPrintScale = 0.25;
+          if (printScale == 0.25) nextPrintScale = 0.3;
+          if (printScale == 0.3) nextPrintScale = 0.35;
+          if (printScale == 0.35) nextPrintScale = 0.4;
+          if (printScale == 0.4) nextPrintScale = 0.5;
+          if (printScale == 0.5) nextPrintScale = 0.75;
+          if (printScale == 0.75) nextPrintScale = 1;
+          if (printScale == 1) nextPrintScale = 0.2;
+          printScale = nextPrintScale;
           return false;
         }
       }
@@ -477,9 +494,13 @@ class Button {
       line(0.25, -0.25, 0.25, -0.15);
       line(0.25, 0.25, 0.25, 0.15);
     } else if (this.label == "scale") {
-      // textAlign(CENTER);
-      fill(0);
-      text(0, 0, "1");
+      textAlign(CENTER);
+      textSize(0.5);
+      textFont(myFont)
+      fill(255);
+      stroke(0)
+      strokeWeight(0.1)
+      text(printScale, 0, 0.2);
     }
     pop();
   }

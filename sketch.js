@@ -15,6 +15,7 @@ let currentSide = 0;
 let runPrint = false;
 let midPoint;
 let printScale = 1;
+// adwdq
 let myFont;
 
 function preload() {

@@ -14,7 +14,7 @@ let buttonSelected = false;
 let currentSide = 0;
 let runPrint = false;
 let midPoint;
-let printScale = 0.5;
+let printScale = 1;
 let myFont;
 
 function preload() {
@@ -129,7 +129,7 @@ function draw() {
     for (let i = 0; i < 4; i++) {
       push();
       translate(x[i], y[i]);
-      scale(printScale);
+      scale(printScale * 0.5);
       rotate((PI / 2) * i);
 
       translate(-midPoint.x, -midPoint.y);
